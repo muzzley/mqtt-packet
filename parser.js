@@ -250,8 +250,14 @@ Parser.prototype._parsePublish = function () {
   if (packet.qos > 0) {
     if (!this._parseMessageId()) { return }
   }
-
-  packet.payload = this._list.slice(this._pos, packet.length)
+  
+  if( process.env.MUZ_CORE_MQTT_MAXPAYLOAD  && 
+      typeof process.env.MUZ_CORE_MQTT_MAXPAYLOAD == 'number' && 
+      packet.length > process.env.MUZ_CORE_MQTT_MAXPAYLOAD){
+    return this.emit('error', new Error('Payload size > '+process.env.MUZ_CORE_MQTT_MAXPAYLOAD))
+  }else{
+    packet.payload = this._list.slice(this._pos, packet.length)
+  }  
 }
 
 Parser.prototype._parseSubscribe = function() {
